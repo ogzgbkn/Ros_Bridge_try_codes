@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!-- Based on demo found here:
+http://wiki.ros.org/roslibjs/Tutorials/BasicRosFunctionality
+http://wiki.ros.org/roslibjs/Tutorials/BasicRosFunctionality
+-->
+
+<!--
+The next two lines bring in the JavaScript files that support rosbridge integration.
+-->
+<script type="text/javascript" src="http://cdn.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+<script type="text/javascript" src="build/roslib.min.js"></script>
+
+<script type="text/javascript" type="text/javascript">
+
+// This function connects to the rosbridge server running on the local computer on port 9090
+var rbServer = new ROSLIB.Ros({
+    url : 'ws://localhost:9090'
+ });
+
+ // This function is called upon the rosbridge connection event
+ rbServer.on('connection', function() {
+     // Write appropriate message to #feedback div when successfully connected to rosbridge
+     var fbDiv = document.getElementById('feedback');
+     fbDiv.innerHTML += "<p>Connected to websocket server.</p>";
+ });
+
+// This function is called when there is an error attempting to connect to rosbridge
+rbServer.on('error', function(error) {
+    // Write appropriate message to #feedback div upon error when attempting to connect to rosbridge
+    var fbDiv = document.getElementById('feedback');
+    fbDiv.innerHTML += "<p>Error connecting to websocket server.</p>";
+});
+
+// This function is called when the connection to rosbridge is closed
+rbServer.on('close', function() {
+    // Write appropriate message to #feedback div upon closing connection to rosbridge
+    var fbDiv = document.getElementById('feedback');
+    fbDiv.innerHTML += "<p>Connection to websocket server closed.</p>";
+ });
+
+// These lines create a topic object as defined by roslibjs
+var cmdVelSubsTopic = new ROSLIB.Topic({
+    ros : rbServer,
+    name : '/turtle1/cmd_vel',
+    messageType : 'geometry_msgs/Twist'
+});
+
+// These lines create a message that conforms to the structure of the Twist defined in our ROS installation
+// It initalizes all properties to zero. They will be set to appropriate values before we publish this message.
+var twist = new ROSLIB.Message({
+    linear : {
+        x : 0.0,
+        y : 0.0,
+        z : 0.0
+    },
+    angular : {
+        x : 0.0,
+        y : 0.0,
+        z : 0.0
+    }
+});
+
+cmdVelSubsTopic.subscribe(function (msg) {
+       
+    console.log('Received message on ' + cmdVelSubsTopic.name);
+    if(msg){
+        console.log('MESSAGE IS TAKEN!!')
+        console.log(msg.linear.x + " " + msg.linear.y + " " + msg.linear.z)
+        console.log(msg.angular.x + " " + msg.angular.y + " " + msg.angular.z)
+        document.getElementById("cmdVelMsg1").innerHTML = msg.linear.x + " " + msg.linear.y + " " + msg.linear.z;
+        document.getElementById("cmdVelMsg2").innerHTML = msg.angular.x + " " + msg.angular.y + " " + msg.angular.z;
+    }
+});
+
+
+ 
+</script>
+</head>
+
+<body>
+
+<p id="cmdVelMsg1">Linear will be shown here</p>
+<p id="cmdVelMsg2">Angular will be shown here</p>
+
+<div id="feedback"></div>
+</body>
+</html>
